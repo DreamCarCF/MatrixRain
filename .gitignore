@@ -1,0 +1,12 @@
+# No personal shortcuts, user paths, credentials or development environments.
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.lnk
+__pycache__/
+*.pyc
+.venv/
+.env
+*.log
+native-test.txt
+native-preview.png

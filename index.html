@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#010503">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="离线绿色单字符代码雨，适配桌面与触屏。无日文、无广告、无追踪。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<title>Matrix Rain · 单字符代码雨</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#010503;font-family:ui-monospace,Consolas,monospace;color:#caffdb}body{overscroll-behavior:none}canvas{display:block;width:100%;height:100%;touch-action:none}body.quiet{cursor:none}#panel{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 24px));padding:16px;border:1px solid #225d38;border-radius:14px;background:#03170df0;box-shadow:0 8px 36px #0008;transition:opacity .35s}body.quiet #panel{opacity:0;pointer-events:none;visibility:hidden}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}h1{font-size:16px;letter-spacing:2px;margin:0}#hide{font-size:12px;padding:6px 10px}.buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}button{font:inherit;font-size:13px;background:#0e3320;color:#caffdb;border:1px solid #36724b;border-radius:7px;min-height:44px;padding:8px 5px;cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #a5ffbe;outline-offset:3px}button[aria-pressed=true]{background:#286940}.sliders{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}label{font-size:12px;display:block}label span{float:right;color:#92bb9c}input[type=range]{width:100%;accent-color:#65e78b;min-height:32px;margin:6px 0 0}#status{font-size:11px;line-height:1.65;color:#84ac90;margin:9px 0 0;min-height:18px}#keys{font-size:11px;color:#618c70;line-height:1.5;margin:5px 0 0}@media(pointer:coarse){#keys{display:none}}@media(max-height:440px){#panel{padding:10px;bottom:max(8px,env(safe-area-inset-bottom))}header{margin-bottom:6px}.sliders{margin-top:6px}#keys{display:none}input[type=range]{margin:0}}@media(prefers-reduced-motion:reduce){#panel{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="rain" aria-label="绿色单字符竖向代码雨"></canvas>
+<section id="panel" aria-label="代码雨控制面板">
+<header><h1>MATRIX RAIN</h1><button id="hide" aria-label="隐藏控制面板">隐藏</button></header>
+<div class="buttons"><button id="pause" aria-pressed="false">暂停</button><button id="full">全屏</button><button id="wake" aria-pressed="false">保持亮屏</button><button id="exit">退出</button></div>
+<div class="sliders"><label for="speed">流速<span id="speedLabel">1.0×</span><input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"></label><label for="size">字符大小<span id="sizeLabel">20 px</span><input id="size" type="range" min="12" max="32" step="2" value="20"></label></div>
+<p id="status" role="status" aria-live="polite">轻触空白显示/隐藏面板 · 离线、无日文、无麦克风权限</p>
+<p id="keys">F 全屏 · 空格 暂停 · ↑↓ 调速 · Esc 退出网页全屏</p>
+</section>
+<script>
+'use strict';
+(()=>{
+const $=id=>document.getElementById(id), canvas=$('rain'),ctx=canvas.getContext('2d');
+const glyphs=Array.from('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz{}[]()<>=+-*/;:_&|!#$%');
+const palette={background:'#010503',head:'#dbffe6',glow:'#65ff98'};
+const config={speed:1,size:matchMedia('(pointer:coarse)').matches?18:20};
+try{const saved=JSON.parse(localStorage.getItem('matrix-rain-settings')||'null');if(saved){if(Number.isFinite(saved.speed))config.speed=Math.min(3,Math.max(.2,saved.speed));if(Number.isFinite(saved.size))config.size=Math.min(32,Math.max(12,Math.round(saved.size/2)*2));}}catch(_){}
+let width=0,height=0,streams=[],last=0,frames=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,seed=2026,idleTimer;
+let wakeLock=null,wantWake=false;
+function random(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}
+function glyph(){return glyphs[Math.floor(random()*glyphs.length)];}
+function resize(){width=innerWidth;height=innerHeight;const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);streams=[];for(const [size,depth] of [[Math.round(config.size*.7),.45],[config.size,1]])for(let x=0;x<width;x+=size*1.1){const length=10+Math.floor(random()*25);streams.push({x,size,depth,y:random()*(height+length*size),velocity:(45+random()*100)*depth,length,chars:Array.from({length},glyph),clock:0});}if(paused)draw(0);}
+function draw(dt){ctx.fillStyle=palette.background;ctx.fillRect(0,0,width,height);ctx.textAlign='center';for(const s of streams){s.y+=dt*s.velocity*config.speed;s.clock+=dt;if(s.clock>.09){s.clock=0;s.chars[Math.floor(random()*s.length)]=glyph();}if(s.y-s.length*s.size>height){s.y=-random()*height*.5;s.velocity=(45+random()*100)*s.depth;}ctx.font=s.size+'px ui-monospace, Consolas, monospace';for(let j=s.length-1;j>=0;j--){const y=s.y-j*s.size;if(y<-s.size||y>height+s.size)continue;const fade=Math.pow(1-j/s.length,1.6)*s.depth;ctx.shadowBlur=j===0&&s.depth>.8?8:0;ctx.shadowColor=palette.glow;ctx.fillStyle=j===0?palette.head:`rgba(45,${Math.round(140+100*fade)},100,${fade})`;ctx.fillText(s.chars[j],s.x,y);}}ctx.shadowBlur=0;const vignette=ctx.createRadialGradient(width/2,height/2,Math.min(width,height)*.18,width/2,height/2,Math.max(width,height)*.7);vignette.addColorStop(0,'transparent');vignette.addColorStop(1,'rgba(0,0,0,.6)');ctx.fillStyle=vignette;ctx.fillRect(0,0,width,height);}
+function animate(t){requestAnimationFrame(animate);if(document.hidden){last=0;return;}if(last&&t-last<1000/30)return;const dt=last?Math.min((t-last)/1000,.08):1/30;last=t;if(!paused){draw(dt);frames++;}}
+function status(text){$('status').textContent=text;}
+function updateUI(){ $('pause').textContent=paused?'继续':'暂停';$('pause').setAttribute('aria-pressed',String(paused));$('speed').value=config.speed;$('size').value=config.size;$('speedLabel').textContent=config.speed.toFixed(1)+'×';$('sizeLabel').textContent=config.size+' px';}
+function save(){try{localStorage.setItem('matrix-rain-settings',JSON.stringify(config));}catch(_){} }
+function showPanel(){document.body.classList.remove('quiet');clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(!paused&&!$('panel').contains(document.activeElement))hidePanel();},4000);}
+function hidePanel(){document.body.classList.add('quiet');if($('panel').contains(document.activeElement))document.activeElement.blur();clearTimeout(idleTimer);}
+function togglePause(){paused=!paused;updateUI();showPanel();}
+async function full(){showPanel();try{if(document.fullscreenElement){await document.exitFullscreen();return;}if(!document.documentElement.requestFullscreen){status('此浏览器不支持网页全屏，请通过“添加到主屏幕”打开。');return;}await document.documentElement.requestFullscreen();}catch(_){status('全屏不可用，请使用浏览器全屏或添加到主屏幕。');}}
+async function acquireWake(){if(!navigator.wakeLock){status('此浏览器不支持保持亮屏，请调整系统自动锁定时间。');wantWake=false;return;}try{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{$('wake').setAttribute('aria-pressed','false');$('wake').textContent='保持亮屏';});$('wake').setAttribute('aria-pressed','true');$('wake').textContent='取消亮屏';status('保持亮屏已开启，仅在页面可见且系统允许时有效。');}catch(_){status('系统未允许保持亮屏，可能处于省电模式。');wantWake=false;}}
+$('wake').addEventListener('click',async()=>{wantWake=!wantWake;if(wantWake)await acquireWake();else{if(wakeLock)await wakeLock.release();wakeLock=null;status('已取消保持亮屏。');}showPanel();});
+$('pause').addEventListener('click',togglePause);$('full').addEventListener('click',full);$('hide').addEventListener('click',hidePanel);
+$('exit').addEventListener('click',async()=>{paused=true;wantWake=false;if(wakeLock)await wakeLock.release();if(document.fullscreenElement)await document.exitFullscreen();updateUI();showPanel();status('已停止动画；关闭标签页，或在手机上返回主屏幕即可退出。');});
+$('speed').addEventListener('input',e=>{config.speed=Number(e.target.value);updateUI();save();showPanel();});
+$('size').addEventListener('input',e=>{config.size=Number(e.target.value);resize();updateUI();save();showPanel();});
+canvas.addEventListener('pointerdown',()=>{if(document.body.classList.contains('quiet'))showPanel();else hidePanel();});
+addEventListener('mousemove',e=>{if(e.movementX||e.movementY)showPanel();});
+addEventListener('keydown',e=>{if(/INPUT|BUTTON/.test(document.activeElement.tagName))return;if(e.key.toLowerCase()==='f')full();if(e.code==='Space'){e.preventDefault();togglePause();}if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();config.speed=Math.round(Math.max(.2,Math.min(3,config.speed+(e.key==='ArrowUp'?.1:-.1)))*10)/10;updateUI();save();showPanel();}if(e.key==='Escape')showPanel();});
+addEventListener('resize',resize);document.addEventListener('visibilitychange',()=>{last=0;if(!document.hidden&&wantWake&&(!wakeLock||wakeLock.released))acquireWake();});
+window.matrixState=()=>({frames,paused,speed:config.speed,size:config.size,width,height,streams:streams.length,asciiOnly:glyphs.every(c=>c.charCodeAt(0)<128),singleCharacters:glyphs.every(c=>c.length===1)});
+updateUI();resize();showPanel();requestAnimationFrame(animate);
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

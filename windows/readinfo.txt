@@ -1,0 +1,21 @@
+Matrix Rain — Windows 原生屏保使用说明
+
+文件：MatrixCode.scr 是 .NET WinForms 原生屏保；Start-Matrix.bat 以 /manual 启动；Install-Screensaver.bat 使用 rundll32 desk.cpl,InstallScreenSaver 调用系统屏保安装/设置入口。下载或解压不会自动运行。安装脚本须用户主动执行，可能更改当前屏保选择；登录保护须用户在系统设置中选择。安装后请不要移动或删除 MatrixCode.scr。
+
+手动体验：
+1. 运行 Start-Matrix.bat。
+2. Esc 关闭；空格暂停/继续；上下方向键调速；鼠标单击关闭。
+3. 手动模式不是锁屏，不提供登录保护。
+
+系统屏保：
+1. 运行 Install-Screensaver.bat，在 Windows 屏保设置中自行选择与配置。
+2. /s 模式按键或移动鼠标退出。
+3. 如需恢复时的登录保护，自行勾选“在恢复时显示登录屏幕”，并结合自己的系统账户设置确认效果。
+
+快捷键：发布包不会传递发布者本机的桌面快捷方式或热键。请自己为 Start-Matrix.bat 创建快捷方式，在快捷方式属性中设置热键，例如 Ctrl+Alt+Shift+M（以系统实际接受为准）。不要把他人机器的 C 盘绝对路径或 .lnk 当作通用启动入口。
+
+源码：src/MatrixCode.cs；构建：Build-Windows.cmd，使用 .NET Framework csc 编译器。普通用户使用已有 MatrixCode.scr 即可，无需安装网页测试依赖。构建前应检查机器上 .NET Framework 编译器是否可用，构建结果以脚本实际输出为准。
+
+如果仅需要网页体验，用浏览器打开 ../index.html。网页快捷键 F 全屏、空格暂停、上下调速、Esc 退出全屏；与原生屏保退出行为不同。
+
+验证范围见 ../docs/TESTING.md。原生程序未进行商业代码签名；遇到系统安全提醒时，请核对 SHA256SUMS.txt、审阅源码或自行构建，不要盲目绕过安全提示。许可证待发布者选择，见 ../LICENSE-NOTE.txt。

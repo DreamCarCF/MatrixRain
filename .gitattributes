@@ -1,0 +1,10 @@
+*.command text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.webmanifest text eol=lf
+*.md text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.cs text eol=crlf
+*.scr binary
+*.png binary

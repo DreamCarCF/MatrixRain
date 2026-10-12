@@ -1,0 +1,19 @@
+Matrix Rain — 使用说明
+
+绿色单字符竖向代码雨，字符为英文字母、数字和符号，不使用日文或整行程序代码。
+
+快速使用：
+1. 任意桌面平台：用浏览器打开根目录 index.html。动画可离线使用，直接打开本地文件不注册 PWA。
+2. Windows 原生：运行 windows/Start-Matrix.bat。需要系统屏保时，自行运行 windows/Install-Screensaver.bat 并在系统设置中配置。
+3. Mac：运行 macos/Start-Matrix.command，或直接打开 index.html。它是浏览器体验，不是原生 .saver 插件。脚本必要时需 chmod +x。
+4. 手机：打开发布者提供的 HTTPS/GitHub Pages 地址，支持时添加到主屏幕。不能设为手机系统屏保或动态锁屏。
+
+网页控制：F 全屏、空格暂停、上下调速、Esc 退出全屏。面板可调速度和字号，也提供暂停、全屏、保持亮屏及返回/退出。触屏轻触空白处显隐面板，约 4 秒自动隐藏；暂停或操作控件时保留。
+保持亮屏仅在用户点击且浏览器支持 Screen Wake Lock 时生效。iOS 全屏 API 可能不可用，可尝试添加到主屏幕。退出按钮不能强制关闭浏览器；独立应用模式请返回主屏幕。
+
+Windows 手动模式：Esc 或鼠标单击关闭，空格暂停，上下调速；/s 系统屏保模式按键或移动鼠标退出。手动模式不是锁屏。本机快捷键不会随压缩包传给他人，需自行创建快捷方式设置热键。登录保护请自行勾选系统屏保设置中的“在恢复时显示登录屏幕”。
+
+PWA 需 HTTPS 或 localhost；首次成功加载并缓存后才能离线访问，清除站点数据后需重新缓存。无后台音频，不请求麦克风、摄像头、通知，不进行分析遥测。
+
+完整说明见 README.md；发布见 docs/GITHUB-PUBLISH.md；验证范围见 docs/TESTING.md。Chromium 与 WebKit 桌面/移动视口测试已通过；尚未进行 Mac、iPhone 或 Android 真机测试。
+许可证尚未决定，见 LICENSE-NOTE.txt；不默认采用 MIT。

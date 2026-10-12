@@ -1,0 +1,16 @@
+Matrix Rain — macOS 使用说明
+
+这是浏览器全屏代码雨，不是原生 macOS .saver 屏保插件，也不安装系统组件。
+
+使用：
+1. 保留发布包目录结构，运行本目录 Start-Matrix.command。脚本通过 open ../index.html 打开根网页。
+2. 如果执行权限不足，可在终端进入本目录执行 chmod +x Start-Matrix.command。
+3. 也可完全跳过脚本，用浏览器直接打开上一级 index.html。无需关闭系统安全保护。
+
+网页快捷键：F 全屏、空格暂停/继续、上下方向键调速、Esc 退出网页全屏。面板支持速度、字号、暂停、全屏、保持亮屏与返回/退出；不能强制关闭浏览器。
+保持亮屏必须由用户点击请求，且浏览器支持 Screen Wake Lock 才能生效，不能保证后台亮屏。
+
+本地 index.html 动画可离线运行；file:// 不注册 PWA。要安装 PWA 和首次缓存，请使用 HTTPS/GitHub Pages 或 localhost；支持情况由浏览器决定。
+
+网页已通过 Windows 上 Playwright WebKit 引擎测试，但不代表 macOS 真机 Safari 已通过兼容性测试。发布前请在目标设备检查全屏、快捷键、窗口切换和动画性能。
+更多说明见上一级 README.md 和 docs/TESTING.md。许可证待发布者选择，见 LICENSE-NOTE.txt。
